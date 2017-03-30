@@ -1,0 +1,57 @@
+\section{Práctica 1}
+
+\subsection{}
+
+Se debe guardar el PCB y los registros del proceso desalojado, y luego cargar
+el PCB y los registros del nuevos proceso asignado.
+
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+Ke_context_switch(PCB* pcb_0, PCB* pcb_1) {
+    pcb_0->CPU_TIME += ke_current_user_time();
+    pcb_0->STAT = KE_READY;
+    pcb_0->PC = PC;
+    pcb_0->R0 = R0;
+    pcb_0->R1 = R1;
+    pcb_0->R2 = R2;
+    pcb_0->R3 = R3;
+    pcb_0->R4 = R4;
+    pcb_0->R5 = R5;
+    pcb_0->R6 = R6;
+    pcb_0->R7 = R7;
+    pcb_0->R8 = R8;
+    pcb_0->R9 = R9;
+    pcb_0->R10 = R10;
+    pcb_0->R11 = R011
+    pcb_0->R12 = R12;
+    pcb_0->R13 = R13;
+    pcb_0->R14 = R14;
+    pcb_0->R15 = R15;
+
+    PC = pcb_1->PC
+    R0 = pcb_1->R0
+    R1 = pcb_1->R1
+    R2 = pcb_1->R2
+    R3 = pcb_1->R3
+    R4 = pcb_1->R4
+    R5 = pcb_1->R5
+    R6 = pcb_1->R6
+    R7 = pcb_1->R7
+    R8 = pcb_1->R8
+    R9 = pcb_1->R9
+    R10 = pcb_1->R10
+    R11 = pcb_1->R11
+    R12 = pcb_1->R12
+    R13 = pcb_1->R13
+    R14 = pcb_1->R14
+    R15 = pcb_1->R15
+
+    pcb_1->STAT = KE_RUNNING;
+
+    ke_reset_current_user_time();
+    ret();
+}
+\end{verbatim}
+\end{codesnippet}

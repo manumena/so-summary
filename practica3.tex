@@ -1,0 +1,524 @@
+\section{Práctica 3}
+
+\subsection{}
+
+\subsubsection{}
+
+No
+
+\subsubsection{}
+
+Puede imprimir 1 en los siguientes casos:
+
+\begin{itemize}
+    \item Si se ejecuta primero A y luego B
+    \item Si colisionan las ejecuciones de el incremento de X, provocando que
+    se ejecuten ambas líneas pero X se incremente sólo una vez
+\end{itemize}
+
+Puede imprimir 2 en caso de que se ejecuten B y luego A o que se ejecuten
+simultaneamente pero que el printf sea lo último.
+
+\subsection{}
+
+Primero siempre imprime un 0 de la primer X, pero luego como Y ya es 1 puede
+imprimir cualquier número de `a's, incluyendo 0, seguido de 1, 2, 3 y 4.
+
+\subsection{}
+
+Primero imprime `b' ya que A se queda haciendo busy waiting sobre X. Luego, es
+posible que imprima ``adc'' o ``acd''.
+
+\subsection{}
+
+Si, los procesos acceden y modifican a la variable dentro del mutex, pero lo
+liberan y luego toman decisiones respecto a ella, podría producirse una race
+condition.
+
+\subsection{}
+
+Podría suceder que se produzca una inanición de los procesos que llaman
+primero a wait() ya que quedan en el fondo de la pila hasta que todos los que
+llegan después se liberen.
+
+\subsection{}
+
+Supongamos que wait() y signal() no se ejecutaran atómicamente. Supongamos que
+tenemos una ejecución de dos procesos y ambos ejecutan wait(). Como wait() no
+es atómica una ejecución posible es que ambos procesos lean la capacidad,
+salgan del while, y al momento de decrementarla ya están los dos fuera del
+ciclo, por lo que ambos ya son capaces de entrar a la zona crítica, violando
+el principio de exclusión mutua.
+
+\setcounter{subsection}{7}
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+bool TryToLock() {
+    return !reg.testAndSet();
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+Semaphore semaforos[N] = {0,...,0,1,0,...,0};
+
+for (int j = 0; j < N; j++) {
+    int pid = fork();
+    if (pid == 0) {
+        while (true) {
+            semaforos[j].wait();
+            P[j];
+            semaforos[(j + 1) % N].signal();
+        }
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+// Semaforos para         A B C
+Semaphore semaforos[3] = {1,0,0};
+
+for (int i = 0; i < 3; i++) {
+    int pid = fork();
+    if (pid == 0) {
+        while (true) {
+            semaforos[i].wait();
+            if(i == 0)
+                A();
+            else if (i == 1)
+                B();
+            else if (i == 2)
+                C();
+            semaforos[(i + 1) % 3].signal();
+        }
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+// Semaforos para         B B C A
+Semaphore semaforos[3] = {1,0,0,0};
+
+for (int i = 0; i < 4; i++) {
+    int pid = fork();
+    if (pid == 0) {
+        while (true) {
+            semaforos[i].wait();
+            if(i == 0 || i == 1)
+                B();
+            else if (i == 1)
+                C();
+            else if (i == 3)
+                A();
+            semaforos[(i + 1) % 4].signal();
+        }
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+// Semaforos para          A  ByC
+Semaphore semaforos[2] = { 1 , 0 };
+
+for (int i = 0; i < 3; i++) {
+    int pid = fork();
+    if (pid == 0) {
+        while (true) {
+            if(i == 0) {
+                semaforos[0].wait(2);
+                A();
+                semaforo[1].signal(2);
+            }
+            else if (i == 1) {
+                semaforos[1].wait();
+                B();
+                semaforos[0].signal();
+            }
+            else if (i == 2) {
+                semaforos[1].wait();
+                C();
+                semaforos[0].signal();
+            }
+        }
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+Semaphore sA = Semaphore(1);
+Semaphore sB = Semaphore(0);
+Semaphore sC = Semaphore(0);
+
+bool sigueB = true;
+
+for (int i = 0; i < 3; i++) {
+    int pid = fork();
+    if (pid == 0) {
+        while (true) {
+            if(i == 0) {
+                sA.wait(2);
+                A();
+                if (sigueB) {
+                    sigueB = false;
+                    sB.signal(2);
+                } else {
+                    sigueB = true;
+                    sc.signal();
+                }
+            }
+            else if (i == 1) {
+                sB.wait();
+                B();
+                sA.signal();
+            }
+            else if (i == 2) {
+                sC.wait();
+                C();
+                sA.signal(2);
+            }
+        }
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+Se utiliza un contador global. Después de cada $a_i$ se incrementa ese
+contador y luego se hace un wait(), pero antes se pregunta si ese proceso es
+el último en terminar. Si lo es se hace signal(N) para despertar a todos los
+procesos que ya hayan terminado $a_i$. Es necesario utilizar un lock al
+incrementar el contador para evitar una race condition. El lock debera abarcar
+también la condición para evitar que dos procesos entren con el contador en
+el mismo valor.
+
+\begin{codesnippet}
+\begin{verbatim}
+a();
+spin.lock();
+cont++;
+if (cont == N)
+    sem.signal(N);
+spin.unlock();
+sem.wait();
+b();
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\subsubsection{}
+
+No pueden terminar su ejecución.
+
+\subsubsection{}
+
+No entra en la definición ya que se encuentran esperando a que otros miembros
+del grupo liberen el lock.
+
+\subsubsection{}
+
+No puede terminar su ejecución.
+
+\subsubsection{}
+
+Si, entra en la definición ya que se está a la espera de que se libere el
+lock.
+
+\subsection{}
+
+\subsubsection{}
+
+No se cumplen las condiciones de Coffman.
+
+\subsection{}
+
+Puede haber deadlock si un recurso toma $R_2$ y los otros dos toman $R_1$, y
+todos necesitan ambos recursos para liberar el lock.
+
+Si $R_1$ puede ser compartido por los 3 entonces no puede haber deadlock,
+porque el que haya ganado el lock de $R_2$ puede liberarlo al obtener $R_1$, y
+así con los 3 procesos.
+
+\subsection{}
+
+No puede haber deadlock ya que como los procesos necesitan a lo sumo dos
+recursos, y son todos del mismo tipo, no hay forma de que alguno de los 3
+procesos no consigo sus dos recursos, entonces si hay 2 procesos con un
+recurso cada uno y el otro con 2, este los libera al terminar y ya los otros
+pueden tomar uno cada uno.
+
+\subsection{}
+
+\subsubsection{}
+
+Si, que cada proceso ejecute su primera linea, poniendo ambos semáforos en 0,
+para luego atascarse en el wait del semáforo contrario.
+
+\subsection{}
+
+Se puede ver analizándolo proceso a proceso.
+
+\begin{itemize}
+\item $P_1$ y $P_3$ ya tienen lo que necesitan por lo que eventualmente
+liberarán los recursos asignados: 2$R_2$, 3$R_1$ y 3$R_3$
+\item Con eso $P_2$ puede cumplir sus necesidades (2$R_1$ y 2$R_3$) liberando
+eventualmente 2$R_1$ y 1$R_4$ además de lo recientemente obtenido
+\item Gracias a esto $P_4$ y $P_5$ ya pueden solicitar los recursos que
+necesitaban y así terminar su ejecución, habiendo finalizado todos los
+procesos
+\end{itemize}
+
+\subsubsection{}
+
+Si, hay deadlock. Anteriormente ocurría que $P_1$ y $P_3$ liberarían los
+recursos obtenidos ya que ya habían satisfacido sus necesidades, pero en este
+caso $P_3$ todavía necesita 2$R_2$. El único que puede liberar recursos es
+$P_1$, pero como libera únicamente 1$R_2$, esto no alcanza para satisfacer a
+$P_3$ y por lo tanto $P_2$, $P_3$, $P_4$ y $P_5$ quedan a la espera de que se
+les asigne sus respectivos recursos, sin liberarlos nunca.
+
+\subsection{}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+a();
+spin.lock();
+cont++;
+if (cont == N)
+    sem.signal(N);
+spin.unlock();
+sem.wait();
+b();
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+a();
+atomReg.inc();
+while(atomReg.get() != N) {}
+b();
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+a();
+if (atomReg.getAndInc() == N - 1)
+    sem.signal(N);
+sem.wait();
+b();
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+
+La más fácil de entender es en la que se usan sólo el registro atómico debido
+a su simpleza.
+
+\subsubsection{}
+
+La más eficiente es la tercera ya que no desperdicia tiempo haciendo busy
+waiting como las otras dos.
+
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+// Variables globales:
+atomic<int> clientesDentro;
+
+queue<Sempaphore cliente> colaLocal;
+queue<Sempaphore cliente, Semaphore barbero> colaSofa;
+
+TasLock lockLocal;
+TasLock lockSofa;
+TasLock lockPagando;
+
+Semaphore quieroPagar, aceptoPago, pagoAceptado;
+int esperandoAPagar;
+
+// Cliente:
+
+Semaphore yo = new Semaphore(0);
+Semaphore barbero = new Semaphore(0);
+
+// Si el local está lleno me voy al chori
+if (clientesDentro.getAndInc() > 20) {
+    clientesDentro.getAndDec();
+    exit();
+}
+
+lockLocal.lock();
+colaLocal.push(yo);
+lockLocal.unlock();
+entrar();
+
+// Si hay espacio en el sofa voy y me siento
+lockSofa.lock();
+if (colaSofa.size() < 4) {
+    lockLocal.lock();
+    colaLocal.pop();
+    colaSofa.push(<yo, barbero>);
+    sentarseEnSofa();
+    lockLocal.unlock();
+    lockSofa.unlock();
+} else {
+    lockSofa.unlock();
+
+    // Espero a que me llamen cuando se desocupe un lugar en el sofa
+    yo.wait();
+
+    // Me despertaron, me siento en el sofa
+    lockSofa.lock();
+    lockLocal.lock();
+    colaLocal.pop();
+    colaSofa.push(<yo, barbero>);
+    sentarseEnSofa();
+    lockLocal.unlock();
+    lockSofa.unlock();
+}
+
+// Espero a que el barbero me llame
+yo.wait();
+
+\end{verbatim}
+\end{codesnippet}
+
+\begin{codesnippet}
+\begin{verbatim}
+
+lockSofa.lock();
+
+// Si el sofa estaba lleno tengo que avisarle al proximo que se siente
+if (colaSofa.size() == 3) {
+    parado.signal();
+}
+
+lockSofa.unlock();
+
+sentarmeEnSilla();
+barbero.signal();
+
+// Espero a que el barbero termine de cortarme el pelo
+yo.wait();
+
+// Se terminó el corte, voy a pagar
+lockPagando.lock();
+esperandoAPagar++;
+lockPagando.unlock();
+quieroPagar.wait();
+
+// Pago
+pagar();
+aceptoPago.signal();
+pagoAceptado.wait();
+
+// Pago aceptado, salgo
+clientesDentro.getAndDec();
+salir();
+exit();
+
+// Barbero:
+
+Semaphore yo, cliente;
+
+while(true) {
+    lockSofa.lock();
+    if (!colaSofa.empty()) {
+        <Semaphore,Sempahore> sentado = colaSofa.top();
+        colaSofa.pop();
+
+        cliente = sentado.cliente;
+        yo = sentado.barbero;
+
+        // Le aviso al cliente que venga a ser atendido
+        cliente.signal();
+
+        // Espero a que el cliente se siente en la silla
+        lockSofa.unlock();
+        yo.wait();
+
+        // El cliente se sienta
+        cortarCabello();
+
+\end{verbatim}
+\end{codesnippet}
+
+\begin{codesnippet}
+\begin{verbatim}
+
+        //Le aviso que termine de cortar el pelo
+        cliente.signal();
+    } else
+        lockSofa.unlock();
+
+    lockPagando.lock();
+    if (esperandoAPagar > 1) {
+        esperandoAPagar--;
+        lockPagando.unlock();
+
+        // Le aviso a alguno que puede pagar
+        quieroPagar.signal();
+
+        // Espero a que me paguen
+        aceptoPago.wait();
+
+        // Me pagan
+        aceptoPago();
+        pagoAceptado.signal();
+    } else
+        lockPagando.unlock();
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+Semaphore semMacho[N] = {0,...,0}
+Sempahore semHembra[N] = {0,...,0};
+
+void P(i, sexo) {
+    if (sexo == macho) {
+        semMacho[i].signal();
+        semHembra[i].wait();
+    } else {
+        semHembra[i].signal();
+        semMacho[i].wait();
+    }
+    entrar(i);
+}
+\end{verbatim}
+\end{codesnippet}

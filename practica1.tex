@@ -55,3 +55,256 @@ Ke_context_switch(PCB* pcb_0, PCB* pcb_1) {
 }
 \end{verbatim}
 \end{codesnippet}
+
+\subsection{}
+
+Una system call es un llamado a un servicio del kernel, como puede ser
+realizar entrada/salida a un dispositivo o lanzar un proceso hijo mientras que
+una llamada a función de biblioteca realiza operaciones con los registros y
+direcciones de memoria en el espacio de direcciones del usuario.
+
+\setcounter{subsection}{4}
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+pid_t homero = fork();
+if (homero != 0) {
+    wait_for_child(homero);
+    printf('Abraham');
+    exit();
+} else {
+    pid_t bart = fork();
+    if (bart != 0) {
+        pid_t lisa = fork();
+        if (lisa != 0) {
+            pid_t maggie = fork();
+            if(maggie != 0) {
+                wait_for_child(bart);
+                wait_for_child(lisa);
+                wait_for_child(maggie);
+                printf('Homero');
+                exit();
+            } else {
+                printf('Maggie');
+                exit();
+            }
+        } else {
+            printf('Lisa');
+            exit();
+        }
+    } else {
+        printf('Bart');
+        exit();
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+void system(const char *arg) {
+    pid_t pid = fork();
+    if (pid == 0) exec(arg);
+    else {
+        wait_for_child(pid);
+        exit();
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\subsubsection{}
+
+Deben residir tiki y taka en el área de memoria compartida
+
+\subsubsection{}
+
+temp no debe residir en el espacio de memoria compartida
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+int main() {
+    pid_t child = fork();
+    if (child == 0) {
+        taka_runner();
+    } else {
+        share_mem(&tiki);
+        share_mem(&taka);
+        tiki_taka();
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+pid_t parent = get_current_pid();
+pid_t child = fork();
+int count = 0;
+if (child == 0) {
+    while (true) {
+        breceive(parent);
+        bsend(parent, 2 * count + 1);
+        count++;
+    }
+} else {
+    while (true) {
+        bsend(child, 2 * count);
+        breceive(child);
+        count++;
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+pid_t parent = get_current_pid();
+int count = 0;
+
+pid_t child_1 = fork();
+if (child_1 == 0) {
+    while (true) {
+        bsend(child_1, 3 * count + 1);
+        breceive(child_2);
+        count++;
+    }
+} else {
+
+    pid_t child_2 = fork();
+    if (child_2 == 0) {
+        while (true) {
+            breceive(child_1);
+            bsend(parent, 3 * count + 2);
+            count++;
+        }
+    } else {
+        while (true) {
+            bsend(child_1, 3 * count);
+            count++;
+            breceive(child_2);
+        }
+    }
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\subsubsection{}
+
+No es realizable ya que el proceso de la izquierda comienza enviando result,
+por lo que hasta que el proceso de la derecha no reciba el mensaje, el de la
+izquierda permanecerá bloqueado, ya que el sistema operativo posee una cola de
+mensajes de capacidad cero.
+
+Una ejecucion posible es que en el tiempo 1 se ejecute
+$computo_muy_dificil_2$, y de ahi en adelante si pueden ejecutarse ambos.
+
+\subsubsection{}
+
+Podría utilizarse una cola de mensajes de mayor capacidad para evitar que el
+proceso de la derecha se bloquee al enviar el mensaje.
+
+\subsection{}
+
+\subsubsection{}
+
+Memoria compartida, porque es más rápida. En este caso las funciones no pueden
+pisarse.
+
+\subsubsection{}
+
+Pasaje de mensajes. Si lo hiciera con memoria compartida tendría que haber
+alguna especie de busy waiing para reconocer en que momento termina
+cortarBordes. Con mensajes esto se hace sin desperdiciar recursos.
+
+\subsubsection{}
+
+Pasaje de mensajes. Es imposible usar memoria compartida ya que los procesos
+se ejecutarán en computadoras distintas. Además, en caso de que sí fuera
+posible, parece ser que por el nivel de seguridad al que está expuesto
+eliminarOjosRojos, no es buena idea usar memoria compartida ya que podría ser
+inseguro.
+
+\setcounter{subsection}{11}
+\subsection{}
+
+Si sólo hubiera pipes como comunicación interprocesos el sistema se vería
+enlentecido ya que la falta de señales haría imposible que un proceso fuera
+interrumpido por lo que debería suplirse haciendo una especie de polling, lo
+cual desperdiciaría mucho tiempo de ejecución.
+
+\setcounter{subsection}{13}
+\subsection{}
+
+El error esta en utilizar $shared_child_pid$ siendo el padre para recibir del
+hijo ya que es posible que el hijo todavia no se haya ejecutado, lo que
+provocaría que no se le haya asignado un valor todavía a $shared_child_pid$.
+
+La solución es reemplazarlo por child, que ya contiene el pid del hijo.
+
+\setcounter{subsection}{15}
+\subsection{}
+
+\begin{codesnippet}
+\begin{verbatim}
+int assignPipe[2];
+int resultPipe[2];
+
+int file = open(``nombre_de_archivo'');
+int *list;
+
+pipe(assignPipe);
+pipe(resultPipe);
+
+for(int i = 0; i < 8; i++) {
+    int child = fork();
+    if (child == 0) {
+        close(assignPipe[1]);
+        close(resultPipe[0]);
+
+        do {
+            read(assignPipe[0], list, sizeof(list));
+            write(resultPipe[1], calcular_promedio(list));
+        } while(list != loquesea);
+
+        close(assignPipe[0]);
+        close(resultPipe[1]);
+        exit();
+    }
+}
+
+close(assignPipe[0]);
+close(resultPipe[1]);
+
+int rowsRead = 0;
+while(cargarFila(file, list) || rowsRead < 8) {
+    rowsRead++;
+    write(assignPipe[1], list, sizeof(list));
+}
+
+char *proms;
+int prom;
+do {
+    read(resultPipe[0], prom, sizeof(prom));
+    proms ++ prom;
+    
+} while ()
+
+close(``nombre_de_archivo'');
+\end{verbatim}
+\end{codesnippet}

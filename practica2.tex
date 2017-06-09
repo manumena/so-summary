@@ -1,0 +1,66 @@
+\section{Práctica 2}
+
+\subsection{}
+
+\subsubsection{}
+
+CPU: [0,2], [11,13], [21,22]
+E/S: [3,10], [14,20]
+
+\subsubsection{}
+
+3 y 2 las de CPU, 7 las de E/S
+
+\setcounter{subsection}{3}
+\subsection{}
+
+\subsubsection{}
+
+No
+
+\subsubsection{}
+
+Si, que se este ejecutando una tarea de cierta prioridad, llegue una de menor
+prioridad que no es atendida, y que a partir de ahí sigan llegando tareas de
+mayor prioridad ocasionando que nunca se atienda la tarea de menor prioridad.
+
+\subsubsection{}
+
+Si, que se este ejecutando una tarea de cierta duración, llegue una de mayor
+duración que no es atendida, y que a partir de ahí sigan llegando tareas de
+menor duración ocasionando que nunca se atienda la tarea de mayor duración.
+
+\subsubsection{}
+
+No
+
+\subsection{}
+
+\subsubsection{}
+
+El efecto es que ese proceso se ejecuta más
+
+\subsubsection{}
+
+Ventaja es que puede discriminarse el quantum de cada proceso, lo cual
+permite darle importancia en cierto sentido.
+
+La desventaja es que si se usan múltiples procesadores podría ocurrir que
+mientras un procesador este ejecutando una tarea, otro caiga en el PCB
+duplicado
+
+\subsubsection{}
+
+Puede utilizarse una lista con los PCB no duplicados y otra con las duraciones
+de los quantums de cada proceso.
+
+\setcounter{subsection}{6}
+\subsection{}
+
+\subsubsection{}
+
+\begin{tabular}{c c c c c}
+Tarea & $T_0$ & $T_1$ & $T_2$ & Promedio \\
+Espera & 16 & 21 & 3 & 13.3 \\
+Turnaround & 32 & 34 & 24 \\
+\end{tabular}

@@ -1,0 +1,102 @@
+\section{Práctica 5}
+
+\subsection{}
+Son necesarios $N$ accesos a memoria.
+
+\subsection{}
+
+\subsubsection{}
+Es necesario leer los primeros 10 bloques directos.
+
+\subsubsection{}
+Es necesario leer los 12 bloques directos, el bloque de indirección simple y
+los primeros 8 bloques del bloque de indirección. 21 en total.
+
+\subsection{}
+
+\subsubsection{}
+
+\subsubsection{}
+Conviene usar inodos ya que FAT no está acotado.
+
+\subsubsection{}
+Conviene usar FAT ya que mediante inodos esta acotado por la cantidad de
+bloques del inodo.
+
+\subsubsection{}
+Conviene usar inodos porque se carga un inodo y los bloques del archivo a
+medida que se van leyendo, en FAT se debe cargar la tabla entera a memoria.
+
+\subsection{}
+
+\subsubsection{}
+Los identificadores de bloque son de 24 bits, por lo que es posible
+direccionar hasta $2^{24}$ bloques. El del hash es de 16 bits por lo que el
+tamaño de la tabla es de $2^{16}$ entradas.
+
+La FAT contiene solo identificadores de bloque de 24 bits, por lo que su
+tamaño es de $2^{24} \times 24$ bits. Lo que es lo mismo que
+$2^{24} \times 3$ bytes $= 48MiB$.
+
+En cuanto a la tabla de hash, cada entrada contiene el identificador de bloque
+(24 bits) y el tamaño del archivo. El tamaño de un archivo no está actotado,
+por lo que en principio podría llegar a ser de 16GiB, que es el tamaño del
+disco. Por lo que para almacenar el tamaño del archivo se necesitan 34 bits,
+siendo un total de 58 bits por entrada. El tamaño de la tabla de hash es de
+$2^{16} \times 58$ bits $= 3801088$ bits $=14848$ bytes, poco más de 14KiB.
+
+Como el tamaño de bloque es de dos sectores, y cada sector de 1KiB, la unidad
+mínima es de 2KiB. La FAT queda almacenada a la perfección en 24Ki sectores,
+pero el hash no, por lo que sufre de un poco de fragmentación interna; se
+necesitan 7 bloques para cubrir 14KiB y un bloque extra para el resto.
+
+Ambas estructuras ocupan entonces 24Ki + 8 bloques, lo que equivale a 50348032
+bytes. Quedando mas de 15,95 Gib para los archivos.
+
+\subsubsection{}
+El tamaño del bloque debería ser de 2 sectores, ya que es lo que mejor se
+ajusta al tamaño de los archivos, por mas que se desperdicie la mitad de la
+memoria. Esto hace que la cantidad de bloques posibles a ser direccionados sea
+de $\frac{16GiB}{2KiB} = 8Mi$ bloques $= 2^23$ bloques. Por lo que se
+necesitan 23 bits para direccionarlos, lo cual genera la necesidad de que el
+tamaño de los identificadores de bloque sea de 24 bits. Por último, como cada
+archivo requerirá en promedio 1 bloque, puede decirse que se tiene la misma
+cantidad de archivos que de bloques, entonces el tamaño del hash también es de
+24 bits.
+
+\subsubsection{}
+En caso en que los archivos tuviesen un tamaño promedio de 16MiB, uno
+intentaría usar el tamaño máximo de bloque que es de 8 sectores (8 KiB). Pero
+la cantidad de bits a utilizar para los identificadores de bloque diferiría
+en 2 (o en 1 si se usasen bloques de 4 sectores), lo cual lleva a utilizar la
+configuración de 24 bits de todos modos, y lo mismo para el hash.
+
+\subsection{}
+Si, en caso en que varios procesos intenten leer el mismo bloque, con raid 0
+deberán turnarse para leerlo, mientras que con raid 1 cada proceso puede leer
+una copia distinta.
+
+\subsection{}
+
+\subsubsection{}
+2 accesos: el bloque a escribir y el de paridad.
+
+\subsubsection{}
+9 accesos: 7 para los bloques, 1 para la paridad de los primeros 4 y otro para
+la de los últimos 3.
+
+\setcounter{subsection}{7}
+\subsection{}
+
+\subsubsection{}
+Falso, siempre puede incrementarse el nivel de protección agregando una copia
+más, en caso de que el resto de las copias fallen.
+
+\subsubsection{}
+La aumenta en el sentido de que esa cinta puede ser robada, pero también puede
+ser robado el disco en donde está almacenada la información, y de hecho es más
+vulnerable dentro del disco ya que es posible que sea accedido de manera
+remota, lo cual no ocurre con la cinta.
+
+\subsection{}
+Un snapshot es una imágen del estado del sistema, una forma de recuperar

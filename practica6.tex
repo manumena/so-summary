@@ -1,0 +1,156 @@
+\section{Práctica 6}
+
+\subsection{}
+Polling sería más conveniente en caso de que se realice una comunicación
+constante, para cualquier caso en que se envíe una ráfaga de datos es mucho
+más costoso el tiempo perdido en cambios de contexto si se implementara el
+uso de interrupciones que el tiempo de espera activa del polling.
+
+Si la comunicación tuviese intervalos largos o no determinados, conviene la
+estrategia de interrupciones, como en un teclado.
+
+El caso híbrido es el que se envían ráfagas de datos separadas por intervalos
+largos. Se utilizan las interrupciones para establecer la comunicación, se
+envía la ráfaga de datos atendida mediante polling, y una vez finalizada se
+espera a la próxima interrupción.
+
+\subsection{}
+El uso de E/S de un procesos en promedio es de 0.77, entonces el uso de la CPU
+para 6 procesos es
+
+\begin{center}
+$U_{CPU}(6) = 1 - U_{E/S}(1)^6 = 1 - 0.2084 = 0.7916$
+\end{center}
+
+En cuanto al DMA,
+
+\begin{center}
+$U_{DMA}(6) = 1 - U_{CPU}(1)^6 = 1 - 0.23^6 = 0,9998$
+\end{center}
+
+\subsection{}
+
+\subsubsection{}
+La velocidad de los dispositivos virtuales va a ser la misma que la de los
+procesos, no?
+
+\subsubsection{}
+La latencia mejora ya que los procesos no necesitan quedarse esperando a que
+el dispositivo esté listo.
+
+La liberación de recursos es mayor ya que no se hace espera activa.
+
+El throughput mejora porque es posible usar los recursos liberados para otras
+tareas.
+
+\subsection{}
+
+\subsubsection{}
+Debe estar al tanto de que haya spooling.
+
+\subsubsection{}
+El driver no sabe que hay o no spooling, solo el usuario.
+
+\subsection{}
+
+\subsubsection{}
+Si, el driver es código.
+
+\subsubsection{}
+No, el driver es solamente software.
+
+\subsubsection{}
+No. Es una porción de software hecha por el fabricante del dispositivo a
+controlar.
+
+\subsubsection{}
+No, se ejecuta en espacio de kernel.
+
+\subsubsection{}
+Falso. Además de interrupciones, puede trabajar mediante polling o DMA.
+
+\subsubsection{}
+Verdadero?
+
+\subsection{}
+\begin{codesnippet}
+\begin{verbatim}
+int driver_init() {}
+int driver_remove() {}
+int driver_open() {}
+int driver_close() {}
+
+int driver_read(int *data) {
+    *data = IN(CHRONO_CURRENT_TIME);
+    return IO_OK;
+}
+
+int driver_write(int *data) {
+    OUT(CHRONO_CTRL, CHRONO_RESET);
+    return IO_OK;
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsection{}
+
+\setcounter{subsection}{10}
+\subsection{}
+
+\subsubsection{}
+\begin{codesnippet}
+\begin{verbatim}
+int write(int sector, void *data) {
+    if (DOR_STATUS)
+        OUT(DOR_IO, 1);
+    sleep(50);
+
+    OUT(ARM, sector / cantidad_sectores_por_pista());
+    while(ARM_STATUS) {}
+
+    OUT(SEEK_SECTOR, sector % cantidad_sectores_por_pista());
+
+    escribir_datos(data);
+    while(DATA_READY) {}
+}
+\end{verbatim}
+\end{codesnippet}
+
+\subsubsection{}
+\begin{codesnippet}
+\begin{verbatim}
+Semaphore ready;
+Semaphore timer;
+
+void arm_or_data_ready() {
+    ready.signal();
+}
+
+void timer_ready() {
+    timer.signal();
+}
+
+int driver_init() {
+    ready = new Sempaphore(0);
+    timer = new Sempaphore(0);
+    request_irq(6, arm_or_data_ready);
+    request_irq(7, timer_ready);
+}
+
+int write(int sector, void *data) {
+    if (DOR_STATUS)
+        OUT(DOR_IO, 1);
+    timer.wait();
+
+    OUT(ARM, sector / cantidad_sectores_por_pista());
+    ready.wait();
+
+    OUT(SEEK_SECTOR, sector % cantidad_sectores_por_pista());
+
+    escribir_datos(data);
+    ready.wait();
+
+    return(IO_OK);
+}
+\end{verbatim}
+\end{codesnippet}

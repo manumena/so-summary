@@ -1,0 +1,103 @@
+\section{Práctica 4}
+
+\subsection{}
+
+Una dirección de memoria lógica es traducida a una de memoria lineal a
+través de la segmentación, y ésta es traducida a una dirección de memoria
+física mediante la paginación.
+
+\subsection{}
+
+Fragmentación interna es cuando los bloques son muy grandes para los datos
+almacenados dentro de ellos, lo que provoca que se desperdicie espacio.
+Fragmentación externa es cuando no hay suficiente memoria contigua para ser
+asignada, por lo que queda inutilizable.
+
+\subsection{}
+
+Bloques
+\begin{enumerate}
+	\item 8MB 2MB
+	\item 1MB
+	\item 4MB 1MB
+	\item 512KB 12KB
+	\item 512KB
+	\item 2MB
+\end{enumerate}
+
+Programas
+\begin{enumerate}
+	\item 500KB
+	\item 6MB
+	\item 3MB
+	\item 20KB
+	\item 4MB
+\end{enumerate}
+
+\subsubsection{}
+
+\begin{itemize}
+	\item Programa 1 en bloque 4
+	\item Programa 2 en bloque 1
+	\item Programa 3 en bloque 3
+	\item Programa 4 en bloque 2
+	\item Programa 5 en bloque 1
+\end{itemize}
+
+\subsection{}
+
+Porque con una dirección lineal de $n$ cantidad de bits pueden direccionarse
+$2^n$ páginas, por lo que una la tabla tiene $2^n$ entradas.
+
+\setcounter{subsection}{6}
+\subsection{}
+
+65536 bytes divididos en páginas de 4096 bytes hacen 16 páginas en total. Se
+necesitan 8 páginas para el texto, 5 para los datos y 4 para la pila, por lo
+que no es posible ejecutarlo.
+
+Si el tamaño de página fuera de 512 bytes, se tendrían direccionadas 128
+páginas. El texto del programa requeriría 64, los datos 33 y la pila 31. De
+esta forma sí podria ejecutarse.
+
+\subsection{}
+
+\subsubsection{}
+
+400, porque se debe acceder primero a la entrada correspondiente de la tabla y
+una segunda vez para la página.
+
+\subsection{}
+
+Ocurre cuando se intenta acceder a una página que ya no está en memoria. Lo
+que el sistema hace en ese caso es guardar en disco una de las páginas ya
+cargadas en memoria para hacer espacio a la página que se está intentando
+acceder. Una vez hecho esto se lee la página de disco y se la carga en
+memoria.
+
+\setcounter{subsection}{10}
+\subsection{}
+
+\subsubsection{}
+
+Cada pagina contiene 200 posiciones por lo que habrá 50 fallos de página
+
+\subsubsection{}
+
+Como la matriz está almacenada contiguamente por por fila, este tipo de
+recorrido salta a través de las columnas, por lo que cada pagina solo
+albergará 2 posiciones, por lo que habran 5000 fallos de página
+
+\setcounter{subsection}{12}
+\subsection{}
+
+\subsubsection{}
+
+Tiene sentido si lo que se hace es dejar un segmento especialmente para
+atender las llamadas. Si fuese parte de la paginación, sería posible que la
+página en donde está almacenado el código para la atención de llamadas se
+encuentre fuera de memoria, por lo que se perdería tiempo en traerla de disco.
+
+\subsubsection{}
+
+Si, justamente para ahorrarse el tiempo de ir a buscarlas a memoria.

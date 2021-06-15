@@ -1,0 +1,123 @@
+\section{Práctica 7}
+
+\subsection{}
+
+\subsubsection{}
+Se aplica la función de hash a la contraseña que ingresó el usuario y si el
+resultado coincide con el valor almacenado entonces el ingreso es exitoso.
+
+\subsubsection{}
+La probabilidad de acertar con una contraseña distinta es de $\frac{1}{2^64}$.
+
+\subsubsection{}
+Cantidad de contraseñas a probar: $2^63$.
+
+Cantidad de contraseñas por segundo: $10^9$.
+
+Cantidad de segundo por año: $3.15 \times 10^7$.
+
+Serían necesarios $\frac{2^63}{10^16 \times 3.15} ~= 293$ años.
+
+\subsubsection{}
+Cantidad de contraseñas a probar: $36^6$.
+
+Cantidad de contraseñas por segundo: $10^9$.
+
+Serían necesarios $\frac{36^6}{10^9} = 2.18$ segundos.
+
+\subsection{}
+
+\subsubsection{}
+No es seguro ya que es vulnerable a un replay-attack. Consiste en interceptar
+la información y retransmitirla, haciéndose pasar por otra persona.
+
+\subsubsection{}
+El atacante tendría el seed y el hash, lo que podría hacer es hashear todas
+las contraseñas posibles con ese seed hasta que coincida con el hash robado.
+Pero para eso necesitaría tener la función de hash.
+
+\subsection{}
+
+\subsubsection{}
+El problema se introduce en la funcion \textit{gets}, puesto que esta no se
+fija que la entrada tenga menor tamaño que la variable a donde se almacenará,
+y como consecuencia el contenido pisa el resto de la pila de la función
+pudiendo pisarse la dirección de retorno, desencadenando la ejecución de otro
+programa almacenado en otra posición de memoria.
+
+\subsubsection{}
+Únicamente la variable nombre.
+
+\subsubsection{}
+La dirección de retorno de \textit{gets} si.
+
+\subsubsection{}
+No. Una vez que se llama a \textit{gets} el usuario ya tomó el control.
+
+\subsection{}
+Primero se apilan los parámetros de \textit{login}, luego la dirección de
+retorno y finalmente las variables locales, que en este caso son un arreglo de
+char de 32 posiciones y un credential que contiene otros 2 arreglos de char de
+32 posiciones cada uno.
+
+Las variables se apilan de manera tal que al leerlas o escribirlas se hace
+descendiendo por la pila. El problema es que \textit{fgets} puede escribir
+hasta la cantidad de caracteres que se pasa por parámetro, y en este caso es
+errónea ya que debería ser \textit{sizeof(user.pass)} en lugar de
+\textit{sizeof(user)}. Esto permite que puedan escribirse los siguientes 32
+bytes de la pila, que en el caso del segundo \textit{fgets}, es el espacio
+reservado para la contraseña real. Y asi puede sobreescribirse en la pila la
+verdadera contraseña y engañar al programa.
+
+\subsubsection{}
+Los valores son \textit{admin} para el usuario, y
+\textit{cualquiercontraseñad32caracterescualquiercontraseñad32caracteres} para
+la contraseña.
+
+\subsection{}
+
+\subsubsection{}
+El mecanismo que hace esto posible es el parámetro setUid a la hora de asignar
+los permisos del ejecutable de este código. Se establece que este programa que
+puede ser ejecutado por cualquier usuario, tiene permisos para abrir o
+ejecutar otros archivos como si fuera root.
+
+\subsubsection{}
+El problema está en que \textit{gets} puede sobreescribir la dirección de
+retorno si el string que se pasa tiene mas de 128 caracteres. Puede controlar
+todo lo que este apilado debajo de la contraseña.
+
+\subsection{}
+
+\subsubsection{}
+Si. Si lo que se le pasa a la funcion es un NaN.
+
+\subsubsection{}
+Podría devolver 0 en caso en que se le pase un NaN.
+
+\setcounter{subsection}{7}
+\subsection{}
+
+\subsubsection{}
+. ; cat /etc/passwd
+
+\subsubsection{}
+Puede pasarsele: .'' ; cat ''/etc/passwd
+
+\subsubsection{}
+Puede pasarsele: .'' \&\& cat ''/etc/passwd
+
+\subsubsection{}
+\begin{codesnippet}
+\begin{verbatim}
+void wrapper_ls(const char * dir) {
+    pid_t pid = fork();
+    if (pid == 0) {
+        execve(``ls'', dir);
+    } else {
+        int status;
+        while (waitpid(pid, &status, 0) == -1) {}
+    }
+}
+\end{verbatim}
+\end{codesnippet}

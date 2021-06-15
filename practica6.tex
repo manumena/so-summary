@@ -31,8 +31,10 @@ $U_{DMA}(6) = 1 - U_{CPU}(1)^6 = 1 - 0.23^6 = 0,9998$
 \subsection{}
 
 \subsubsection{}
-La velocidad de los dispositivos virtuales va a ser la misma que la de los
-procesos, no?
+Si, es posible si el dispositivo tiene su propia memoria en donde encolar los
+pedidos. También puede lograrse simplemente teniendo una cola a donde
+almacenar los pedidos y que haya un proceso encargado de desencolar y
+comunicarse con el dispositivo.
 
 \subsubsection{}
 La latencia mejora ya que los procesos no necesitan quedarse esperando a que
@@ -43,13 +45,21 @@ La liberación de recursos es mayor ya que no se hace espera activa.
 El throughput mejora porque es posible usar los recursos liberados para otras
 tareas.
 
+\subsubsection{}
+No tiene sentido hacer spooling en una placa de red ya que se necesita una
+garantía en la comunicación que haciendo spooling se pierde. Si se hiciera
+spooling se perdería el orden de los pedidos y la sincronicidad en la
+comunicación. Además no tiene sentido hacer spooling en cuanto a la lectura.
+
 \subsection{}
 
 \subsubsection{}
-Debe estar al tanto de que haya spooling.
+Debe estar al tanto de que haya spooling para saber como reaccionar en cuanto
+a la velocidad de respuesta.
 
 \subsubsection{}
-El driver no sabe que hay o no spooling, solo el usuario.
+El driver no sabe que hay o no spooling, ya que este método se aplica
+previamente a comunicarse con el mismo.
 
 \subsection{}
 
@@ -70,7 +80,8 @@ No, se ejecuta en espacio de kernel.
 Falso. Además de interrupciones, puede trabajar mediante polling o DMA.
 
 \subsubsection{}
-Verdadero?
+Falso. El driver debe saber en que SO corre ya que cada uno provee una API
+diferente y se comporta de manera distinta.
 
 \subsection{}
 \begin{codesnippet}

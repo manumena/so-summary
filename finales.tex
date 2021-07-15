@@ -48,3 +48,39 @@ Mandatory Access Control (MAC): Cada sujeto tiene un grado (se suele manejar el 
 Cuando el sistema quiere realizar una transacción, en lugar de realizarla inmediatamente, se la escribe en el \textit{journal}. A esto se lo llama realizar un \textit{commit}. Un vez hecho el \textit{commit}, se devuelve el control al proceso usuario mientras el filesystem hace el replay de los commits registrados.
 
 Este otro proceso mantiene un puntero que indica la operación dentro del commit que se está llevando a cabo, el cual va moviendo a medida que va satisfaciendo las operaciones y con ellas, los commits. Este algoritmo permite que ante una falla completa del sistema que requiera un reinicio, se pueda consultar el \textit{journal} para asi reestablecer el sistema mediante el puntero, y continuar con la operación que habia quedado pendiente, asi como con el resto de los commits que aún no habían sido ejecutados.
+
+\subsection{Diciembre 2019}
+\subsubsection{Procesos - Una página es compartida por dos procesos. Puede suceder que para un proceso sea de sólo lectura mientras que el otro tenga permitida la escritura?}
+
+\subsubsection{Sincronización - ¿Cómo podrías sincronizar dos procesos usando IPC? ¿Cuál es la diferencia entre Spin locks y semáforos? ¿Cuándo utilizaría cada uno?}
+
+Podrías sincronizarlos usando:
+\begin{itemize}
+\item Memoria compartida \\
+\item Algún otro recurso compartido (archivo, base de datos) \\
+\item Pasaje de mensaje
+\end{itemize}
+
+Los Spin Locks hacen busy waiting, los semáforos no. 
+
+Además, no existe un orden cuando se utiliza un Spin Lock: los procesos continúan compitiendo por entrar a la zona crítica y se puede dar que un proceso nunca pueda acceder ya que el mecanismo se basa en simplemente consultar todos simultáneamente. En cambio, mediante semáforos, los procesos entran en waiting (no hacen espera activa sino que se duermen, esto requiere acceso al kernel) y se añaden a una cola para luego ser desencolados en el momento en que se pueda liberar el lock para dejar entrar a otro (hacer el signal).
+
+\subsubsection{Seguridad - Describir setUID y buffer overflow y un ataque que incluya ambos}
+
+setUID es un atributo booleano que tienen los archivos que, cuando esta activado, permite que el proceso corra esa rutina con el permiso del owner del archivo. Esto permite realizar distintas acciones que requieren permisos mas elevados, de una manera controlada ya que solo se ejecuta con ese permiso la rutina descripta por el archivo y luego se revocan.
+
+Por ejemplo, si tuviera la necesidad de modificar un archivo con hashes de contraseñas de usuarios, necesitaría permisos de administrador. Gracias a setUID, puede crearse una rutina que modifique ese archivo de la manera controlada en que el diseñador del sistema operativo desee, permitiendo a cualquier proceso invocarla.
+
+Un buffer overflow es un tipo de inyección de código. Es cuando un atacante se aprovecha de un programa que corre una función insegura en términos de tamaños de buffers, como lo es strcpy() que copia dentro del buffer hasta encontrar un byte NULL, haciendo que se escriba tanto contenido en el buffer en memoria que lo sobrepase y sobreescriba memoria por fuera del buffer. De esta forma se pueden sobreescribir las variables que estan almacenadas en el stack y si se sobreescribe un poco mas, se puede modificar la dirección de retorno, logrando que una vez finalizada la función se redirija la ejecución a una porción de memoria controlada por el atacante. De esta forma se termina ejecutando ese código controlado por el atacante, con el ID efectivo del proceso.
+
+Un ataque posible sería realizar un buffer overflow sobre una rutina con setUID activado, y de esta forma conseguir ejecutar código controlado por el atacante, con el UID efectivo del owner del archivo.
+
+\subsubsection{E/S - ¿Cómo afectan los dispositivos de memoria de estado sólido a los algoritmos de scheduler de E/S? Definir Storage Area Network (SAN)}
+
+Los dispositivos de memoria de estado sólido no tienen problema para leer una posición aleatoria de la memoria como ocurre con los HDD, por lo que suele utilizarse una política FCFS, pero tienen otro problema ocasionado por las características de los semiconductores NAND que los componen: pueden ser leidos y escritos de a páginas (similar a los sectores en HDD) pero no pueden ser sobreescritos. Para lograr eso se deben borrar, lo cual tarda más que escribir y mucho más que leer, y luego escribir. Además, el borrado se hace de a bloques (que tienen varias paginas de tamaño).
+
+Para evitar tener que borrar y así poder ahorrarse el tiempo de hacerlo, lo que se hace es escribir en otra pagina y marcar la vieja como invalida en la FTL (Flash Translation Layer). Cuando ya no hay paginas libres, se busca un bloque inválido (todas las páginas inválidas) para ser borrado y luego escrito. Sin embargo, puede ocurrir que no existan bloques inválidos, pero si bloques con algunas páginas invalidas que no se pueden borrar individualmente porque el borrado se hace de a bloques. Como la lectura y escritura sí es de a páginas, se podrían leer las paginas validas de un bloque y escribirlas en otro para así salvar esas paginas y poder borrar ese bloque (textit{garbage collection}). Pero como el problema nace de que el disco este lleno, no hay un lugar a donde salvar esas páginas, por lo que se hace textit{over-provisioning}: se deja siempre un porcentaje del disco libre para poder salvar esas páginas hasta liberar los bloques.
+
+También ocurre que estos dispositivos se gastan luego de ser borrados muchas veces, por lo que la controladora trata de balancear dónde guarda fisicamente los datos en relación a que tan seguidos son borrados los bloques que los contienen (textit{wear leveling}).
+
+Estas características de los dispositívos de memoria de estado sólido provocan que se utilize FCFS para requests de lectura pero no para escritura ya que varían de una manera no uniforme que depende de qué tan lleno esté el disco (ahí entran en acción textit{garbage collection} y textit{over-provisioning}).

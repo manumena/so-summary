@@ -1,7 +1,16 @@
 \section{Preguntas de finales}
 
-\subsection{Marzo 2020}
+\subsection{Baader - Marzo 2020}
 \subsubsection{Procesos - Explicar diferencia entre proceso y thread y relación de este último con funciones reentrantes. Explicar qué es un árbol de procesos y cuál es su importancia}
+
+Un proceso puede:
+\begin{itemize}
+\item Hacer una system call \\
+\item Ejecutar en la CPU \\
+\item Lanzar un proceso hijo \\
+\item Realizar e/s de dispositivos \\
+\item Terminar \\
+\end{itemize}
 
 
 Un proceso es un programa en ejecución. El proceso puede invocar tantos threads como necesite, cada thread corresponde a un único proceso. En algunas implementaciones, los recursos de los threads se distribuyen entre los recursos totales de su proceso padre, lo cual esta descripto por el árbol de procesos, y en otras pueden asignarseles recursos independientemente.
@@ -49,7 +58,7 @@ Cuando el sistema quiere realizar una transacción, en lugar de realizarla inmed
 
 Este otro proceso mantiene un puntero que indica la operación dentro del commit que se está llevando a cabo, el cual va moviendo a medida que va satisfaciendo las operaciones y con ellas, los commits. Este algoritmo permite que ante una falla completa del sistema que requiera un reinicio, se pueda consultar el \textit{journal} para asi reestablecer el sistema mediante el puntero, y continuar con la operación que habia quedado pendiente, asi como con el resto de los commits que aún no habían sido ejecutados.
 
-\subsection{Diciembre 2019}
+\subsection{Baader - Diciembre 2019}
 \subsubsection{Procesos - Una página es compartida por dos procesos. Puede suceder que para un proceso sea de sólo lectura mientras que el otro tenga permitida la escritura?}
 
 \subsubsection{Sincronización - ¿Cómo podrías sincronizar dos procesos usando IPC? ¿Cuál es la diferencia entre Spin locks y semáforos? ¿Cuándo utilizaría cada uno?}
@@ -84,3 +93,24 @@ Para evitar tener que borrar y así poder ahorrarse el tiempo de hacerlo, lo que
 También ocurre que estos dispositivos se gastan luego de ser borrados muchas veces, por lo que la controladora trata de balancear dónde guarda fisicamente los datos en relación a que tan seguidos son borrados los bloques que los contienen (textit{wear leveling}).
 
 Estas características de los dispositívos de memoria de estado sólido provocan que se utilize FCFS para requests de lectura pero no para escritura ya que varían de una manera no uniforme que depende de qué tan lleno esté el disco (ahí entran en acción textit{garbage collection} y textit{over-provisioning}).
+
+Una Storage Area Network es una red independiente de alta velocidad que conecta múltiples servidores con una red de dispositivos de almacenamiento. Cada servidor puede acceder a los dispositivos como si fuese un disco conectado directamente al servidor. Esto simplifica el mantenimiento de los dispositivos de almacenamiento porque permite que estén todos centralizados físicamente en un lugar, independientemente de donde estén los servidores. También permite cambiar el programa que se corre en cada servidor y que aun así pueda acceder a los datos que necesita.
+
+\subsubsection{Describir page fault. ¿Qué pasa cuando salta un page fault cuando una página no está en memoria? Describir el proceso.}
+
+Las páginas de un proceso que no están en memoria o que no son accesibles por el mismo, son marcadas en la page table como inválidas. Cuando el proceso intenta acceder a una página inválida se produce un page fault. El hardware de paginado detecta el bit de inválido al intentar traducir la dirección de memoria y le causa una trap al sistema operativo.
+
+Cuando la página en cuestión no está en memoria ocurre lo siguiente:
+\begin{enumerate}
+\item Se toma un frame libre (si no hay se aplicará la politica de desalojo que corresponda) \\
+\item Se lee la página del almacenamiento secundario dentro del frame asignado \\
+\item Se actualiza la page table con la nueva dirección de memoria de la página \\
+\item Se reinicia la instrucción
+\end{enumerate}
+
+\subsubsection{¿Cómo funciona protección en paginado?}
+La protección en paginado se logra a través de bits de protección asociados a cada frame, generalmente dentro de la tabla de páginas. Un bit puede servir para indicar que un frame es de lectura-escritura o de sólo lectura para ese proceso.
+
+Al mismo momento que la dirección física está siendo computada, pueden chequearse los bits de protección para asegurarse de no estar tratando de escribir un frame de sólo lectura. Si se intentara escribir en un frame de sólo lectura, se levantaría una trap al sistema operativo. Lo mismo podría idearse para distintos tipos de acceso que quieran definirse, como por ejemplo sólo ejecución, agregando más bits de protección, permitiendo distintas combinaciones entre ellos.
+
+También se agrega un bit a la entrada de la tabla de páginas indicando si la página es válida o inválida: si es válida es porque está en el espacio lógico de direcciones.
